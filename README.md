@@ -1,372 +1,192 @@
 
-<html lang="ar">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Neon Pro Clicker</title>
+<title>NEON ARCADE | Game Studio</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+
 <style>
-body{
-  margin:0;
-  padding:0;
-  font-family:'Arial',sans-serif;
-  background:#0a0a0f;
-  color:#0ff;
-  text-align:center;
-  overflow:hidden;
-}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Orbitron',sans-serif;}
+body{background:#050510;color:#fff;overflow-x:hidden}
 
-/* ===== Canvas Background ===== */
-#bgCanvas{
+/* ===== BACKGROUND GRID ===== */
+.bg-grid{
   position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  z-index:-1;
+  inset:0;
+  background:
+    linear-gradient(#00f6ff22 1px, transparent 1px),
+    linear-gradient(90deg,#00f6ff22 1px, transparent 1px);
+  background-size:70px 70px;
+  animation:gridMove 30s linear infinite;
+  z-index:-2;
+}
+@keyframes gridMove{
+  to{background-position:700px 700px,700px 700px;}
 }
 
-/* ===== الصفحة الرئيسية ===== */
-#mainMenu{
-  position:absolute;
-  top:0; left:0; width:100%; height:100%;
+/* ===== PARTICLES ===== */
+canvas{position:fixed;inset:0;z-index:-1}
+
+/* ===== HERO ===== */
+.hero{
+  height:100vh;
   display:flex;
   flex-direction:column;
-  align-items:center;
   justify-content:center;
-  background:rgba(0,0,0,0.5);
-}
-#mainMenu h1{
-  font-size:50px;
-  text-shadow:0 0 10px #0ff,0 0 20px #0ff;
-  margin-bottom:40px;
-}
-#mainMenu button{
-  padding:15px 30px;
-  margin:10px;
-  font-size:18px;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
-  color:#0ff;
-  background:#111;
-  text-shadow:0 0 5px #0ff;
-  box-shadow:0 0 15px #0ff;
-  transition:0.2s;
-}
-#mainMenu button:hover{
-  box-shadow:0 0 30px #0ff;
-  text-shadow:0 0 15px #0ff;
-}
-
-/* ===== صفحة اللعبة ===== */
-#gameScreen{
-  display:none;
-  padding-top:120px;
-}
-
-/* ===== Header اللعبة ===== */
-.header{
-  position:fixed;
-  top:0;
-  width:100%;
-  background:#05050a;
-  padding:12px 0;
-  box-shadow:0 0 20px #0ff;
-  z-index:100;
-}
-.header-row{
-  display:flex;
-  justify-content:space-around;
   align-items:center;
-  font-size:14px;
-  color:#0ff;
-  text-shadow:0 0 5px #0ff;
-  flex-wrap:wrap;
+  text-align:center;
 }
-.rank{
-  padding:5px 12px;
-  border-radius:20px;
-  font-size:13px;
-  font-weight:bold;
-  text-shadow:0 0 8px #0ff;
+.hero h1{
+  font-size:clamp(60px,10vw,130px);
+  font-weight:900;
+  background:linear-gradient(90deg,#00f6ff,#ff00ff);
+  -webkit-background-clip:text;
+  color:transparent;
+  text-shadow:0 0 60px #00f6ff88;
 }
-
-/* ===== Progress Bar ===== */
-.progress{
-  width:80%;
-  height:12px;
-  background:#111;
-  margin:8px auto 0;
-  border-radius:10px;
-  box-shadow:0 0 10px #0ff inset;
+.welcome{
+  margin-top:40px;
+  font-size:clamp(18px,3vw,30px);
+  letter-spacing:3px;
+  text-transform:uppercase;
+  opacity:0;
+  animation:fadeIn 2s ease forwards;
+  animation-delay:.6s;
+  text-shadow:0 0 15px #00f6ff,0 0 35px #00f6ff;
 }
-.progress-bar{
-  height:100%;
-  width:0%;
-  background:#0ff;
-  border-radius:10px;
-  box-shadow:0 0 15px #0ff;
-  transition:width 0.3s;
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(25px)}
+  to{opacity:1}
 }
 
-/* ===== Game Buttons ===== */
-button.gameBtn{
-  padding:10px 20px;
-  margin:5px;
-  font-size:14px;
-  border:none;
-  border-radius:8px;
+/* ===== GAMES ===== */
+.games{padding:100px 8%}
+.games h2{text-align:center;font-size:46px;margin-bottom:60px}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:40px;
+}
+
+.game{
+  height:320px;
+  border-radius:22px;
+  overflow:hidden;
   cursor:pointer;
-  text-shadow:0 0 5px #0ff;
-  box-shadow:0 0 10px #0ff;
-  background:#111;
-  color:#0ff;
-  transition:0.2s;
+  position:relative;
+  box-shadow:0 0 40px #00f6ff33;
+  transition:.4s;
 }
-button.gameBtn:hover{
-  box-shadow:0 0 20px #0ff;
-  text-shadow:0 0 10px #0ff;
+.game:hover{
+  transform:translateY(-15px) scale(1.05);
+  box-shadow:0 0 80px #ff00ff77;
 }
-
-/* ===== Box ===== */
-#box{
-  position:absolute;
-  display:none;
-  border-radius:10px;
-  cursor:pointer;
-  transition:0.1s;
-  touch-action: manipulation;
-}
-#box:active{
-  transform: scale(0.9);
-  filter: drop-shadow(0 0 25px #0ff);
-}
-#box.trail::after{
-  content:"";
-  position:absolute;
+.game img{
   width:100%;
   height:100%;
-  border-radius:10px;
-  box-shadow:0 0 30px #0ff, 0 0 50px #0ff inset;
-  animation: fadeTrail 0.5s forwards;
+  object-fit:cover;
 }
-@keyframes fadeTrail{
-  0%{opacity:1; transform:scale(1);}
-  100%{opacity:0; transform:scale(1.5);}
-}
-
-/* ===== Score & Timer ===== */
-#score, #timer{
-  font-size:20px;
-  text-shadow:0 0 8px #0ff;
-  transition:0.2s;
-}
-#score.flash{
-  animation: flash 0.3s ease-in-out;
-}
-@keyframes flash{
-  0%{text-shadow:0 0 5px #0ff,0 0 10px #0ff; color:#0ff;}
-  50%{text-shadow:0 0 20px #ff0,0 0 40px #ff0; color:#ff0;}
-  100%{text-shadow:0 0 8px #0ff,0 0 15px #0ff; color:#0ff;}
+.game span{
+  position:absolute;
+  bottom:0;
+  width:100%;
+  padding:15px;
+  background:linear-gradient(transparent,#000);
+  text-align:center;
+  font-size:22px;
 }
 
-@media (max-width:600px){
-  #box{ min-width:30px; min-height:30px; }
-  #score, #timer{ font-size:18px; }
-  button.gameBtn{ padding:8px 16px; font-size:12px; }
-  .header-row{ flex-direction:column; gap:5px; }
+/* ===== SOCIAL ===== */
+.social{text-align:center;padding:80px 0}
+.social a{
+  padding:18px 50px;
+  border-radius:50px;
+  background:linear-gradient(90deg,#ff00ff,#00f6ff);
+  color:#000;
+  text-decoration:none;
+  font-size:18px;
+  box-shadow:0 0 50px #ff00ff88;
+  transition:.3s;
 }
+.social a:hover{transform:scale(1.15)}
+
+footer{text-align:center;padding:40px;opacity:.5}
 </style>
 </head>
 <body>
 
-<canvas id="bgCanvas"></canvas>
+<div class="bg-grid"></div>
+<canvas id="particles"></canvas>
 
-<!-- الصفحة الرئيسية -->
-<div id="mainMenu">
-  <h1>🎮 Neon Pro Clicker</h1>
-  <button onclick="startGameFromMenu()">ابدأ اللعبة</button>
-  <button onclick="showStats()">المستويات والنقاط</button>
-</div>
+<!-- HERO -->
+<section class="hero">
+  <h1>NEON ARCADE</h1>
+  <div class="welcome">✦ Where Imagination Becomes Playable ✦</div>
+</section>
 
-<!-- صفحة اللعبة -->
-<div id="gameScreen">
-  <div class="header">
-    <div class="header-row">
-      <div>Level: <span id="level">1</span></div>
-      <div>Coins: <span id="coins">0</span></div>
-      <div id="rank" class="rank">مبتدئ</div>
+<!-- GAMES -->
+<section class="games">
+  <h2>🎮 Our Games</h2>
+  <div class="grid">
+
+    <!-- لعبتك الأولى -->
+    <div class="game" onclick="openGame()">
+      <img src="Neon Pro Clicker game title screen.png" alt="Neon Game">
+      <span>Neon Pro Clicker</span>
     </div>
-    <div class="progress">
-      <div id="xpBar" class="progress-bar"></div>
-    </div>
+
+    <div class="game"><span>Coming Soon</span></div>
+    <div class="game"><span>Coming Soon</span></div>
+
   </div>
-  <h2>🎮 Neon Pro Clicker</h2>
-  <p id="score">النقاط: 0</p>
-  <p id="timer">الوقت: 30</p>
-  <button class="gameBtn" onclick="startGame()">ابدأ</button>
-  <button class="gameBtn" onclick="stopGame()">إيقاف</button>
-  <div id="box"></div>
-</div>
+</section>
+
+<!-- INSTAGRAM -->
+<section class="social">
+  <a href="https://instagram.com/USERNAME" target="_blank">
+    Instagram · Neon Arcade
+  </a>
+</section>
+
+<footer>© 2026 Neon Arcade</footer>
 
 <script>
-// ===== Canvas Background =====
-const canvas = document.getElementById("bgCanvas");
-const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-window.addEventListener("resize", ()=>{canvas.width=window.innerWidth; canvas.height=window.innerHeight;});
+// PARTICLES
+const c=document.getElementById("particles"),ctx=c.getContext("2d");
+function resize(){c.width=innerWidth;c.height=innerHeight}
+resize();addEventListener("resize",resize);
 
-let lines=[];
-for(let i=0;i<50;i++){
-  lines.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,len:Math.random()*100+50,speed:Math.random()*1+0.5,color:`hsl(${Math.random()*360},100%,50%)`});
-}
-function animateLines(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  lines.forEach(line=>{
-    ctx.strokeStyle=line.color;
-    ctx.lineWidth=2;
+let ps=[...Array(140)].map(()=>({
+  x:Math.random()*c.width,
+  y:Math.random()*c.height,
+  r:Math.random()*2+.6,
+  vx:(Math.random()-.5)*.4,
+  vy:(Math.random()-.5)*.4
+}));
+
+(function animate(){
+  ctx.clearRect(0,0,c.width,c.height);
+  ps.forEach(p=>{
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<0||p.x>c.width)p.vx*=-1;
+    if(p.y<0||p.y>c.height)p.vy*=-1;
+    ctx.fillStyle="#00f6ff";
     ctx.beginPath();
-    ctx.moveTo(line.x,line.y);
-    ctx.lineTo(line.x,line.y+line.len);
-    ctx.stroke();
-    line.y+=line.speed;
-    if(line.y>canvas.height){line.y=-line.len; line.x=Math.random()*canvas.width;}
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fill();
   });
-  requestAnimationFrame(animateLines);
+  requestAnimationFrame(animate);
+})();
+
+// فتح لعبتك
+function openGame(){
+  window.open("https://medazizaloulou.github.io/games/","_blank");
 }
-animateLines();
-
-// ===== بيانات اللاعب =====
-let level=parseInt(localStorage.getItem("level"))||1;
-let xp=parseInt(localStorage.getItem("xp"))||0;
-let coins=parseInt(localStorage.getItem("coins"))||0;
-let rank="";
-
-// ===== بيانات اللعبة =====
-let score=0, timeLeft=30, gameRunning=false, timerInterval, boxTimeout, comboCount=0;
-
-// ===== عناصر DOM =====
-let box=document.getElementById("box");
-let scoreEl=document.getElementById("score");
-
-// ===== واجهة المستخدم =====
-function updateUI(){
-  document.getElementById("level").innerText=level;
-  document.getElementById("coins").innerText=coins;
-  document.getElementById("xpBar").style.width=(xp/(level*100)*100)+"%";
-  updateRank();
-}
-
-function updateRank(){
-  let rankEl=document.getElementById("rank");
-  let color="#0ff";
-  if(level>=50){rank="👑 ملك السرعة";color="gold";rankEl.style.background="linear-gradient(45deg, gold, orange)";}
-  else if(level>=35){rank="🔴 أسطورة";color="#ff0033";rankEl.style.background=color;}
-  else if(level>=20){rank="🟡 خبير";color="#ffcc00";rankEl.style.background=color;}
-  else if(level>=10){rank="🟣 محترف";color="#9900ff";rankEl.style.background=color;}
-  else if(level>=5){rank="🔵 لاعب";color="#00ccff";rankEl.style.background=color;}
-  else{rank="🟢 مبتدئ";color="#00ff66";rankEl.style.background=color; rankEl.style.color="#000";}
-  rankEl.innerText=rank;
-  box.style.boxShadow=`0 0 25px ${color},0 0 50px ${color}`;
-}
-
-// ===== تشغيل اللعبة من القائمة =====
-function startGameFromMenu(){
-  document.getElementById("mainMenu").style.display="none";
-  document.getElementById("gameScreen").style.display="block";
-  startGame();
-}
-
-// ===== وظائف اللعبة =====
-function startGame(){
-  if(gameRunning) return;
-  score=0; timeLeft=30; gameRunning=true; comboCount=0;
-  scoreEl.innerText="النقاط: 0";
-  document.getElementById("timer").innerText="الوقت: 30";
-  timerInterval=setInterval(()=>{
-    timeLeft--;
-    document.getElementById("timer").innerText="الوقت: "+timeLeft;
-    if(timeLeft<=0) endGame();
-  },1000);
-  showBox();
-}
-
-function stopGame(){
-  if(!gameRunning) return;
-  gameRunning=false;
-  clearInterval(timerInterval);
-  clearTimeout(boxTimeout);
-  box.style.display="none";
-}
-
-function showBox(){
-  if(!gameRunning) return;
-  let size=Math.random()*40+40;
-  if(window.innerWidth<400) size=Math.random()*30+30;
-  let headerHeight=document.querySelector('.header').offsetHeight;
-  let maxX=window.innerWidth-size;
-  let maxY=window.innerHeight-size-headerHeight;
-  box.style.width=size+"px";
-  box.style.height=size+"px";
-  box.style.left=Math.random()*maxX+"px";
-  box.style.top=headerHeight+Math.random()*maxY+"px";
-  box.style.background=getRandomColor();
-  box.style.display="block";
-  box.classList.remove("trail");
-  void box.offsetWidth;
-  box.classList.add("trail");
-  let speed=2000-(level*50); if(speed<500) speed=500;
-  boxTimeout=setTimeout(()=>{box.style.display="none"; showBox();},speed);
-}
-
-box.onclick=box.ontouchstart=function(){
-  if(!gameRunning) return;
-  score++;
-  scoreEl.innerText="النقاط: "+score;
-  scoreEl.classList.remove("flash"); void scoreEl.offsetWidth; scoreEl.classList.add("flash");
-  comboCount++;
-  if(comboCount>=5){
-    box.style.transform="scale(1.3)";
-    box.style.boxShadow="0 0 50px #ff0,0 0 80px #ff0";
-    scoreEl.classList.add("flash");
-    setTimeout(()=>{box.style.transform="scale(1)"; updateRank(); scoreEl.classList.remove("flash");},200);
-    comboCount=0;
-  }
-  box.style.display="none";
-  clearTimeout(boxTimeout);
-  showBox();
-}
-
-function endGame(){
-  gameRunning=false;
-  clearInterval(timerInterval);
-  clearTimeout(boxTimeout);
-  box.style.display="none";
-  let earnedXP=score*5;
-  let earnedCoins=score*2;
-  xp+=earnedXP; coins+=earnedCoins;
-  while(xp>=level*100){xp-=level*100;level++;}
-  localStorage.setItem("level",level);
-  localStorage.setItem("xp",xp);
-  localStorage.setItem("coins",coins);
-  updateUI();
-}
-
-function getRandomColor(){
-  let letters="0123456789ABCDEF"; let color="#";
-  for(let i=0;i<6;i++){color+=letters[Math.floor(Math.random()*16)];}
-  return color;
-}
-
-function showStats(){
-  let level = localStorage.getItem("level") || 1;
-  let coins = localStorage.getItem("coins") || 0;
-  let xp = localStorage.getItem("xp") || 0;
-  alert(`المستوى: ${level}\nالنقاط: ${xp}\nالعملات: ${coins}`);
-}
-
-updateUI();
 </script>
+
 </body>
 </html>
 
