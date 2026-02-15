@@ -1,46 +1,37 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>NEON ARCADE | Game Platform</title>
+<title>NEON ARCADE | Game Studio</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Orbitron',sans-serif}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Orbitron',sans-serif;}
 body{background:#050510;color:#fff;overflow-x:hidden}
 
-/* ===== 3D BACKGROUND ===== */
-#space{
+/* ===== BACKGROUND GRID ===== */
+.bg-grid{
   position:fixed;
   inset:0;
+  background:
+    linear-gradient(#00f6ff22 1px, transparent 1px),
+    linear-gradient(90deg,#00f6ff22 1px, transparent 1px);
+  background-size:70px 70px;
+  animation:gridMove 30s linear infinite;
   z-index:-2;
-  perspective:800px;
 }
-.layer{
-  position:absolute;
-  inset:-10%;
-  background-repeat:repeat;
-  animation: float 40s linear infinite;
+@keyframes gridMove{
+  to{background-position:700px 700px,700px 700px;}
 }
-.layer.one{
-  background-image:radial-gradient(#00f6ff 1px, transparent 1px);
-  background-size:80px 80px;
-  opacity:.25;
-  transform:translateZ(-200px) scale(1.4);
-}
-.layer.two{
-  background-image:radial-gradient(#ff00ff 1px, transparent 1px);
-  background-size:120px 120px;
-  opacity:.2;
-  transform:translateZ(-400px) scale(1.8);
-}
-@keyframes float{to{background-position:600px 600px}}
 
-/* HERO */
+/* ===== PARTICLES ===== */
+canvas{position:fixed;inset:0;z-index:-1}
+
+/* ===== HERO ===== */
 .hero{
-  min-height:100vh;
+  height:100vh;
   display:flex;
   flex-direction:column;
   justify-content:center;
@@ -48,114 +39,152 @@ body{background:#050510;color:#fff;overflow-x:hidden}
   text-align:center;
 }
 .hero h1{
-  font-size:clamp(50px,9vw,120px);
+  font-size:clamp(60px,10vw,130px);
+  font-weight:900;
   background:linear-gradient(90deg,#00f6ff,#ff00ff);
   -webkit-background-clip:text;
   color:transparent;
-  text-shadow:0 0 70px #00f6ff99;
+  text-shadow:0 0 60px #00f6ff88;
 }
-.hero p{margin-top:20px;opacity:.7}
+.welcome{
+  margin-top:40px;
+  font-size:clamp(18px,3vw,30px);
+  letter-spacing:3px;
+  text-transform:uppercase;
+  opacity:0;
+  animation:fadeIn 2s ease forwards;
+  animation-delay:.6s;
+  text-shadow:0 0 15px #00f6ff,0 0 35px #00f6ff;
+}
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(25px)}
+  to{opacity:1}
+}
 
-/* GAMES */
+/* ===== GAMES ===== */
 .games{padding:100px 8%}
-.games h2{
-  text-align:center;
-  font-size:48px;
-  margin-bottom:60px;
-}
+.games h2{text-align:center;font-size:46px;margin-bottom:60px}
+
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
   gap:40px;
 }
 
-/* GAME CARD */
 .game{
-  height:340px;
-  border-radius:26px;
+  height:320px;
+  border-radius:22px;
   overflow:hidden;
-  position:relative;
   cursor:pointer;
-  box-shadow:0 0 40px #00f6ff22;
+  position:relative;
+  box-shadow:0 0 40px #00f6ff33;
   transition:.4s;
+}
+.game:hover{
+  transform:translateY(-15px) scale(1.05);
+  box-shadow:0 0 80px #ff00ff77;
 }
 .game img{
   width:100%;
   height:100%;
   object-fit:cover;
-  position:absolute;
-  inset:0;
-}
-.game::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:linear-gradient(to top,#000000dd,transparent 60%);
 }
 .game span{
   position:absolute;
-  bottom:25px;
-  left:25px;
+  bottom:0;
+  width:100%;
+  padding:15px;
+  background:linear-gradient(transparent,#000);
+  text-align:center;
   font-size:22px;
-  z-index:2;
-}
-.game:hover{
-  transform:translateY(-18px) scale(1.05);
-  box-shadow:0 0 80px #ff00ff66;
 }
 
-/* FOOTER */
-footer{padding:40px;text-align:center;opacity:.5}
+/* ===== SOCIAL ===== */
+.social{text-align:center;padding:80px 0}
+.social a{
+  padding:18px 50px;
+  border-radius:50px;
+  background:linear-gradient(90deg,#ff00ff,#00f6ff);
+  color:#000;
+  text-decoration:none;
+  font-size:18px;
+  box-shadow:0 0 50px #ff00ff88;
+  transition:.3s;
+}
+.social a:hover{transform:scale(1.15)}
+
+footer{text-align:center;padding:40px;opacity:.5}
 </style>
 </head>
-
 <body>
 
-<!-- 3D BACKGROUND -->
-<div id="space">
-  <div class="layer one"></div>
-  <div class="layer two"></div>
-</div>
+<div class="bg-grid"></div>
+<canvas id="particles"></canvas>
 
+<!-- HERO -->
 <section class="hero">
   <h1>NEON ARCADE</h1>
-  <p>AAA Web Game Studio</p>
+  <div class="welcome">✦ Where Imagination Becomes Playable ✦</div>
 </section>
 
+<!-- GAMES -->
 <section class="games">
   <h2>🎮 Our Games</h2>
-
   <div class="grid">
+
     <!-- لعبتك الأولى -->
-    <div class="game" onclick="location.href='https://medazizaloulou.github.io/games/'">
-      <img src="Neon Pro Clicker game title screen.png" alt="https://medazizaloulou.github.io/games/">
-      <span>https://medazizaloulou.github.io/games/</span>
+    <div class="game" onclick="openGame()">
+      <img src="Neon Pro Clicker game title screen.png" alt="Neon Game">
+      <span>Neon Pro Clicker</span>
     </div>
 
-    <!-- ألعاب مستقبلية -->
-    <div class="game">
-      <img src="https://via.placeholder.com/400x600/111/fff?text=Coming+Soon">
-      <span>Coming Soon</span>
-    </div>
+    <div class="game"><span>Coming Soon</span></div>
+    <div class="game"><span>Coming Soon</span></div>
 
-    <div class="game">
-      <img src="https://via.placeholder.com/400x600/111/fff?text=Coming+Soon">
-      <span>Coming Soon</span>
-    </div>
   </div>
+</section>
+
+<!-- INSTAGRAM -->
+<section class="social">
+  <a href="https://instagram.com/USERNAME" target="_blank">
+    Instagram · Neon Arcade
+  </a>
 </section>
 
 <footer>© 2026 Neon Arcade</footer>
 
 <script>
-document.addEventListener("mousemove", e=>{
-  const x=(e.clientX/window.innerWidth-0.5)*20;
-  const y=(e.clientY/window.innerHeight-0.5)*20;
-  document.querySelector(".layer.one").style.transform =
-    `translate(${x}px,${y}px) translateZ(-200px) scale(1.4)`;
-  document.querySelector(".layer.two").style.transform =
-    `translate(${x*2}px,${y*2}px) translateZ(-400px) scale(1.8)`;
-});
+// PARTICLES
+const c=document.getElementById("particles"),ctx=c.getContext("2d");
+function resize(){c.width=innerWidth;c.height=innerHeight}
+resize();addEventListener("resize",resize);
+
+let ps=[...Array(140)].map(()=>({
+  x:Math.random()*c.width,
+  y:Math.random()*c.height,
+  r:Math.random()*2+.6,
+  vx:(Math.random()-.5)*.4,
+  vy:(Math.random()-.5)*.4
+}));
+
+(function animate(){
+  ctx.clearRect(0,0,c.width,c.height);
+  ps.forEach(p=>{
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<0||p.x>c.width)p.vx*=-1;
+    if(p.y<0||p.y>c.height)p.vy*=-1;
+    ctx.fillStyle="#00f6ff";
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fill();
+  });
+  requestAnimationFrame(animate);
+})();
+
+// فتح لعبتك
+function openGame(){
+  window.open("https://medazizaloulou.github.io/games/","_blank");
+}
 </script>
 
 </body>
