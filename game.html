@@ -4,6 +4,19 @@
 <meta charset="UTF-8">
 <title>Neon Pro Clicker - Enhanced</title>
 <style>
+#leaderboard{
+  margin-top:30px;
+}
+#leaderboard h2{
+  margin-bottom:10px;
+  text-shadow:0 0 10px gold;
+}
+#leaderboard li{
+  margin:6px 0;
+  font-size:16px;
+  text-shadow:0 0 6px #0ff;
+}
+
 body{
   margin:0; padding:0;
   font-family:'Arial',sans-serif;
@@ -14,14 +27,15 @@ body{
   position:fixed; top:0; left:0;
   width:100%; height:100%; z-index:-1;
 }
-
 /* الصفحة الرئيسية */
 #mainMenu{
+
   position:absolute; top:0; left:0;
   width:100%; height:100%;
   display:flex; flex-direction:column;
   align-items:center; justify-content:center;
   background:rgba(0,0,0,0.5);
+
 }
 #mainMenu h1{
   font-size:50px; text-shadow:0 0 10px #0ff,0 0 20px #0ff;
@@ -112,15 +126,46 @@ button.gameBtn:hover{
 </style>
 </head>
 <body>
+  <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+window.firebaseDB = (() => {
+  const firebaseConfig = {
+    apiKey: "AIzaSyBF54jVg4p98_zL61jMoV1fmxRRwg104Uw",
+    authDomain: "games-96b5b.firebaseapp.com",
+    projectId: "games-96b5b",
+    storageBucket: "games-96b5b.firebasestorage.app",
+    messagingSenderId: "422294925237",
+    appId: "1:422294925237:web:f204821215ce5b424273fc"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  return { db, collection, addDoc, query, orderBy, limit, getDocs };
+})();
+</script>
+
 
 <canvas id="bgCanvas"></canvas>
 
 <!-- الصفحة الرئيسية -->
 <div id="mainMenu">
   <h1>🎮 Neon Pro Clicker</h1>
+
   <button onclick="startGameFromMenu()">ابدأ اللعبة</button>
   <button onclick="showStats()">المستويات والنقاط</button>
+
+  <!-- الترتيب العالمي -->
+  <div id="leaderboard">
+    <h2>🏆 الترتيب العالمي</h2>
+    <ol id="leaderboardList">
+      <li>— لا توجد بيانات بعد —</li>
+    </ol>
+  </div>
 </div>
+
 
 <!-- صفحة اللعبة -->
 <div id="gameScreen">
@@ -141,6 +186,7 @@ button.gameBtn:hover{
 </div>
 
 <script>
+
 // ===== Canvas Background =====
 const canvas=document.getElementById("bgCanvas");
 const ctx=canvas.getContext("2d");
@@ -274,7 +320,6 @@ function endGame(){
   localStorage.setItem("level",level); localStorage.setItem("xp",xp); localStorage.setItem("coins",coins);
   updateUI();
 }
-
 // ===== وظائف مساعدة =====
 function getRandomColor(){ let letters="0123456789ABCDEF"; let color="#";
   for(let i=0;i<6;i++){ color+=letters[Math.floor(Math.random()*16)]; } return color;
@@ -286,6 +331,7 @@ function showStats(){
   alert(`المستوى: ${level}\nالنقاط: ${xp}\nالعملات: ${coins}`);
 }
 updateUI();
+
 </script>
 </body>
 </html>
