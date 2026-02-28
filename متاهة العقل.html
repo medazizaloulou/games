@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>متاهة العقل - نهائي احترافي</title>
+<style>
+body{margin:0;font-family:Arial;display:flex;justify-content:center;align-items:center;height:100vh;color:white;flex-direction:column;background:linear-gradient(-45deg,#0f2027,#203a43,#2c5364,#1c1c3c);background-size:400% 400%;animation:gradientBG 12s ease infinite;}
+@keyframes gradientBG{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+#info{margin-bottom:15px;font-size:calc(12px + 0.5vw);text-shadow:0 0 10px cyan;}
+canvas{background:black;border-radius:15px;box-shadow:0 0 40px cyan;max-width:100%;height:auto;touch-action:none;}
+#gameOver{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:none;justify-content:center;align-items:center;flex-direction:column;z-index:999;}
+#gameOver h1{color:red;font-size:50px;text-shadow:0 0 20px red;margin-bottom:20px;}
+#gameOver button{padding: calc(6px + 0.5vw) calc(10px + 1vw);margin:10px;font-size: calc(12px + 0.5vw);cursor:pointer;border:none;border-radius:8px;}
+.retry{background:lime;} .reset{background:orange;}
+.popup{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:gold;color:black;padding:15px;border-radius:10px;font-weight:bold;box-shadow:0 0 20px gold;z-index:9999;}
+#achievementsList{position:fixed;top:50px;right:20px;background:rgba(0,0,0,0.7);padding:15px;border-radius:10px;max-width:250px;font-size:14px;box-shadow:0 0 15px cyan;display:none;flex-direction:column;}
+#achievementsList h3{text-align:center;margin-bottom:10px;}
+.achievement{margin:5px 0;padding:5px;border-radius:5px;}
+.unlocked{background:lime;color:black;}
+.locked{background:#444;color:#aaa;}
+#showAchievementsBtn{position:fixed;top:10px;right:20px;padding: calc(6px + 0.5vw) calc(10px + 1vw);background:cyan;color:black;font-weight:bold;border:none;border-radius:6px;cursor:pointer;box-shadow:0 0 10px cyan;z-index:1000;}
+#controls{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:1000;}
+#controls button{padding: calc(8px + 0.5vw) calc(12px + 0.5vw);font-size: calc(12px + 0.5vw);border-radius:8px;border:none;background:cyan;color:black;cursor:pointer;box-shadow:0 0 10px cyan;}
+</style>
+</head>
+<body>
+
+<div id="info">🏆 المرحلة: <span id="level">1</span> | 🥇 أفضل: <span id="best">1</span> | ⏳ الوقت: <span id="time">30</span></div>
+<button id="showAchievementsBtn" onclick="toggleAchievements()">🏅 الإنجازات</button>
+<div id="achievementsList">
+<h3>الإنجازات</h3>
+<div id="achievementsContent"></div>
+</div>
+<canvas id="game"></canvas>
+<div id="gameOver">
+<h1>💀 Game Over</h1>
+<p id="finalLevel"></p>
+<button class="retry" onclick="retry()">إعادة المحاولة</button>
+<button class="reset" onclick="resetGame()">البدء من جديد</button>
+</div>
+<div id="controls">
+<button onclick="move(0,-1)">⬆️</button>
+<button onclick="move(-1,0)">⬅️</button>
+<button onclick="move(1,0)">➡️</button>
+<button onclick="move(0,1)">⬇️</button>
+</div>
+
+<script>
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+
+// أصوات
+const transitionSound = new Audio("https://www.soundjay.com/buttons/sounds/button-16.mp3");
+const achievementSound = new Audio("https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3");
+
+let level=parseInt(localStorage.getItem("currentLevel"))||1;
+let best=parseInt(localStorage.getItem("bestLevel"))||1;
+document.getElementById("level").innerText=level;
+document.getElementById("best").innerText=best;
+
+let rows,cols,size,maze,player,exit,timeLeft,timer;
+
+// الإنجازات
+let achievements = JSON.parse(localStorage.getItem("mazeAchievements")) || {firstMove:false,level5:false,speed:false,noWall:false};
+let steps=0,wallHits=0,startTime;
+const achievementsDefinition = [
+{name:"First Move 👣",key:"firstMove",reward:50},
+{name:"Reached Level 5 👑",key:"level5",reward:200},
+{name:"Speed Runner ⚡",key:"speed",reward:150},
+{name:"Wall Master 🧱",key:"noWall",reward:200}
+];
+
+// حفظ المرحلة
+function saveProgress(){ localStorage.setItem("currentLevel",level); }
+
+// تغيير الخلفية كل 10 مراحل
+function updateBackground(){
+  const gradients = [
+    "linear-gradient(-45deg,#0f2027,#203a43,#2c5364,#1c1c3c)",
+    "linear-gradient(-45deg,#ff512f,#dd2476,#ff512f,#dd2476)",
+    "linear-gradient(-45deg,#1f4037,#99f2c8,#1f4037,#99f2c8)"
+  ];
+  document.body.style.background = gradients[Math.floor(level/10) % gradients.length];
+}
+
+// إنشاء المتاهة
+function generateMaze(){
+rows=15+level*2; cols=15+level*2; if(rows%2===0) rows++; if(cols%2===0) cols++; size=canvas.width/cols;
+maze=[]; for(let y=0;y<rows;y++){maze[y]=[];for(let x=0;x<cols;x++){maze[y][x]=1;}}
+function carve(x,y){ maze[y][x]=0; let dirs=[[2,0],[-2,0],[0,2],[0,-2]]; dirs.sort(()=>Math.random()-0.5);
+for(let [dx,dy] of dirs){ let nx=x+dx; let ny=y+dy; if(nx>0&&ny>0&&nx<cols-1&&ny<rows-1&&maze[ny][nx]===1){maze[y+dy/2][x+dx/2]=0; carve(nx,ny);}}}
+carve(1,1); player={x:1,y:1}; exit={x:cols-2,y:rows-2}; maze[exit.y][exit.x]=0;
+}
+
+// رسم المتاهة
+function draw(){ctx.clearRect(0,0,canvas.width,canvas.height); for(let y=0;y<rows;y++){for(let x=0;x<cols;x++){if(maze[y][x]===1){ ctx.fillStyle="white"; ctx.fillRect(x*size,y*size,size,size); }}} ctx.fillStyle="lime"; ctx.fillRect(exit.x*size,exit.y*size,size,size); ctx.fillStyle="cyan"; ctx.fillRect(player.x*size,player.y*size,size,size);}
+
+// تأثير بداية المرحلة
+function showLevelEffect(){
+let radius = 0; let maxRadius = size*4; let colors=["cyan","magenta","yellow","lime"];
+const color = colors[level % colors.length];
+const interval = setInterval(()=>{ draw(); ctx.beginPath(); ctx.arc(player.x*size + size/2, player.y*size + size/2, radius, 0, Math.PI*2); ctx.fillStyle = `rgba(${color==="cyan"?0:color==="magenta"?255:255},${color==="cyan"?255:color==="magenta"?0:255},255,${1-radius/maxRadius})`; ctx.fill(); radius += 3; if(radius>maxRadius){ clearInterval(interval); draw(); } },20);
+}
+
+// وميض الانتقال
+function flashyTransition(callback){
+transitionSound.currentTime=0; transitionSound.play();
+let frame = 0; const maxFrames = 20;
+let colors=["cyan","magenta","yellow","lime"];
+const color = colors[level % colors.length];
+const interval = setInterval(()=>{
+draw();
+for(let i=0;i<5;i++){
+const radius = (frame + i*3)*10;
+ctx.beginPath();
+ctx.arc(player.x*size+size/2, player.y*size+size/2, radius,0,Math.PI*2);
+ctx.strokeStyle = `rgba(${color==="cyan"?0:color==="magenta"?255:255},${color==="cyan"?255:color==="magenta"?0:255},255,${1-frame/maxFrames})`;
+ctx.lineWidth=2; ctx.stroke();
+}
+frame++; if(frame>maxFrames){ clearInterval(interval); draw(); callback(); }
+},30);
+}
+
+// وميض الإنجاز
+function achievementFlash(){ achievementSound.currentTime=0; achievementSound.play();
+let opacity = 1; const interval = setInterval(()=>{ draw(); ctx.fillStyle = `rgba(255,215,0,${opacity})`; ctx.fillRect(0,0,canvas.width,canvas.height); opacity -= 0.05; if(opacity <= 0){ clearInterval(interval); draw(); } },30);}
+
+// المرحلة التالية
+function nextLevel(){ level++; if(level>best){ best=level; localStorage.setItem("bestLevel",best); document.getElementById("best").innerText=best; } document.getElementById("level").innerText=level; saveProgress(); updateBackground(); startLevel(); }
+
+// حركة اللاعب
+function move(dx,dy){ let nx=player.x+dx; let ny=player.y+dy; if(nx>=0&&ny>=0&&nx<cols&&ny<rows){ if(maze[ny][nx]===0){ player.x=nx; steps++; } else{ wallHits++; }} checkAchievements(); if(player.x===exit.x && player.y===exit.y){ finishLevel(); } draw(); }
+
+document.addEventListener("keydown",e=>{ if(document.getElementById("gameOver").style.display==="flex") return; if(e.key==="ArrowUp") move(0,-1); if(e.key==="ArrowDown") move(0,1); if(e.key==="ArrowLeft") move(-1,0); if(e.key==="ArrowRight") move(1,0);});
+
+// Swipe Controls
+let touchStartX = 0, touchStartY = 0;
+canvas.addEventListener("touchstart", e => { const touch = e.touches[0]; touchStartX = touch.clientX; touchStartY = touch.clientY; }, {passive:true});
+canvas.addEventListener("touchend", e => { const touch = e.changedTouches[0]; const dx = touch.clientX - touchStartX; const dy = touch.clientY - touchStartY; if(Math.abs(dx) > Math.abs(dy)){ if(dx > 30) move(1,0); else if(dx < -30) move(-1,0); } else { if(dy > 30) move(0,1); else if(dy < -30) move(0,-1); } }, {passive:true});
+
+// Responsive
+function resizeCanvas(){ const minSide = Math.min(window.innerWidth, window.innerHeight) - 40; canvas.width = minSide; canvas.height = minSide; if(cols) size = canvas.width / cols; draw(); }
+window.addEventListener("resize", resizeCanvas);
+
+// بدء المرحلة
+function startLevel(){ generateMaze(); resizeCanvas(); showLevelEffect(); timeLeft=30+level*2; if(timeLeft>60) timeLeft=60; document.getElementById("time").innerText=timeLeft; steps=0; wallHits=0; startTime=Date.now(); clearInterval(timer); timer=setInterval(()=>{ timeLeft--; document.getElementById("time").innerText=timeLeft; if(timeLeft<=0) gameOver(); },1000); }
+
+// الإنجازات
+function checkAchievements(){
+if(steps>=1 && !achievements.firstMove){ achievements.firstMove=true; unlockAchievement("First Move 👣",50);}
+if(level>=5 && !achievements.level5){ achievements.level5=true; unlockAchievement("Reached Level 5 👑",200);}
+}
+
+// إنهاء المرحلة
+function finishLevel(){
+let finishTime=(Date.now()-startTime)/1000;
+if(finishTime<=20 && !achievements.speed){ achievements.speed=true; unlockAchievement("Speed Runner ⚡",150);}
+if(wallHits===0 && !achievements.noWall){ achievements.noWall=true; unlockAchievement("Wall Master 🧱",200);}
+localStorage.setItem("mazeAchievements",JSON.stringify(achievements));
+flashyTransition(nextLevel);
+}
+
+// عرض الإنجاز
+function unlockAchievement(name,reward){ achievementFlash(); const popup=document.createElement("div"); popup.className="popup"; popup.innerHTML=`🏆 ${name}<br>+${reward} Points`; document.body.appendChild(popup); setTimeout(()=>popup.remove(),3000); updateAchievementsList(); }
+
+// Game Over
+function gameOver(){ clearInterval(timer); document.getElementById("gameOver").style.display="flex"; document.getElementById("finalLevel").innerText="وصلت إلى المرحلة "+level; }
+
+// إعادة المحاولة
+function retry(){ document.getElementById("gameOver").style.display="none"; startLevel(); }
+
+// إعادة من البداية
+function resetGame(){ localStorage.removeItem("currentLevel"); level=1; document.getElementById("level").innerText=level; document.getElementById("gameOver").style.display="none"; startLevel(); }
+
+// قائمة الإنجازات
+function updateAchievementsList(){ const container=document.getElementById("achievementsContent"); container.innerHTML=""; achievementsDefinition.forEach(a=>{ const div=document.createElement("div"); div.className="achievement "+(achievements[a.key]?"unlocked":"locked"); div.innerText=a.name + (achievements[a.key]?" ✅":" ❌"); container.appendChild(div); }); }
+
+function toggleAchievements(){ const list=document.getElementById("achievementsList"); list.style.display=list.style.display==="none"?"flex":"none"; }
+
+updateAchievementsList();
+updateBackground();
+startLevel();
+</script>
+</body>
+</html>
