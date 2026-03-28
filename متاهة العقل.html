@@ -276,7 +276,7 @@ window.addEventListener("resize", resizeCanvas);
 function startLevel(){
   generateMaze();
   resizeCanvas();
-  timeLeft = 30;
+  timeLeft = 60;
   document.getElementById("time").innerText = timeLeft;
   clearInterval(timer);
   timer = setInterval(()=>{
