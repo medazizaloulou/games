@@ -2,118 +2,94 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>متاهة النيون الديناميكية</title>
+<title>متاهة النيون</title>
+
 <style>
 body{
-  margin:0;
-  font-family:Arial;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-  flex-direction:column;
-  color:white;
-  overflow:hidden;
-  background:#000;
+margin:0;
+font-family:Arial;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+flex-direction:column;
+color:white;
+overflow:hidden;
+background:#000;
 }
-#neonBG{
-  position:fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  z-index:-1;
-  background:black;
-  overflow:hidden;
+
+/* خلفية Neon */
+#bg{
+position:fixed;
+width:100%;
+height:100%;
+z-index:-1;
+background:
+radial-gradient(circle at 20% 20%, #00ffff, transparent 40%),
+radial-gradient(circle at 80% 30%, #ff00ff, transparent 40%),
+radial-gradient(circle at 50% 80%, #00ff9c, transparent 40%),
+#050510;
+animation:move 10s infinite alternate;
 }
-.neonBlob{
-  position:absolute;
-  width:300px; height:300px;
-  border-radius:50%;
-  filter:blur(100px);
-  animation:moveBlob 15s infinite alternate;
-}
-.neonBlob:nth-child(1){background:#00ffff; top:10%; left:20%; animation-duration:18s;}
-.neonBlob:nth-child(2){background:#ff00ff; top:50%; left:70%; animation-duration:22s;}
-.neonBlob:nth-child(3){background:#00ff9c; top:70%; left:40%; animation-duration:20s;}
-@keyframes moveBlob{
-  0%{transform:translate(0,0);}
-  25%{transform:translate(50px,-30px);}
-  50%{transform:translate(-40px,40px);}
-  75%{transform:translate(30px,60px);}
-  100%{transform:translate(0,0);}
+
+@keyframes move{
+0%{background-position:20% 20%,80% 30%,50% 80%;}
+100%{background-position:30% 40%,70% 20%,40% 70%;}
 }
 
 #info{
-  margin-bottom:15px;
-  font-size: calc(12px + 1vw);
-  text-shadow:0 0 20px cyan,0 0 30px magenta;
-  text-align:center;
+margin-bottom:10px;
+font-size:18px;
+text-shadow:0 0 10px cyan;
 }
+
 canvas{
-  background:rgba(0,0,0,0.6);
-  border-radius:15px;
-  box-shadow:0 0 15px #00ffff,0 0 30px #ff00ff,0 0 60px #00ff9c;
-  max-width:100%;
-  height:auto;
+background:rgba(0,0,0,0.6);
+border-radius:15px;
+box-shadow:0 0 20px cyan,0 0 40px magenta;
 }
+
 #controls{
-  margin-top:15px;
-  display:grid;
-  grid-template-columns:60px 60px 60px;
-  gap:10px;
-  justify-content:center;
+margin-top:15px;
+display:grid;
+grid-template-columns:60px 60px 60px;
+gap:10px;
 }
-#controls button{
-  padding:12px;
-  font-size:20px;
-  border:none;
-  border-radius:8px;
-  background:cyan;
-  cursor:pointer;
-  box-shadow:0 0 15px cyan,0 0 30px #00ffff;
+
+button{
+padding:12px;
+font-size:20px;
+border:none;
+border-radius:10px;
+background:cyan;
+box-shadow:0 0 10px cyan;
+cursor:pointer;
 }
 
 #gameOver{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.9);
-  display:none;
-  justify-content:center;
-  align-items:center;
-  flex-direction:column;
-  z-index:999;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.9);
+display:none;
+justify-content:center;
+align-items:center;
+flex-direction:column;
 }
-#gameOver h1{
-  color:red;
-  font-size:50px;
-  text-shadow:0 0 20px red;
-}
-#gameOver button{
-  padding:10px 20px;
-  margin:10px;
-  font-size:18px;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
-}
-.retry{background:lime;}
-.reset{background:orange;}
+
 </style>
 </head>
+
 <body>
 
-<div id="neonBG">
-  <div class="neonBlob"></div>
-  <div class="neonBlob"></div>
-  <div class="neonBlob"></div>
-</div>
+<div id="bg"></div>
 
 <div id="info">
-🏆 المرحلة: <span id="level">1</span> |
-🥇 أفضل: <span id="best">1</span> |
-⏳ الوقت: <span id="time">30</span>
+🏆 <span id="level">1</span> |
+🥇 <span id="best">1</span> |
+⏳ <span id="time">30</span>
 </div>
 
 <canvas id="game"></canvas>
@@ -122,9 +98,11 @@ canvas{
 <div></div>
 <button onclick="move(0,-1)">⬆️</button>
 <div></div>
+
 <button onclick="move(-1,0)">⬅️</button>
 <div></div>
 <button onclick="move(1,0)">➡️</button>
+
 <div></div>
 <button onclick="move(0,1)">⬇️</button>
 <div></div>
@@ -133,169 +111,227 @@ canvas{
 <div id="gameOver">
 <h1>💀 Game Over</h1>
 <p id="finalLevel"></p>
-<button class="retry" onclick="retry()">إعادة</button>
-<button class="reset" onclick="resetGame()">من البداية</button>
+<button onclick="retry()">إعادة</button>
+<button onclick="resetGame()">من البداية</button>
 </div>
 
 <script>
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
 
-// صوت الانتقال Neon
-const transitionSound = new Audio("https://www.soundjay.com/button/beep-07.mp3");
+const canvas=document.getElementById("game")
+const ctx=canvas.getContext("2d")
 
-let level = parseInt(localStorage.getItem("level")) || 1;
-let best = parseInt(localStorage.getItem("best")) || 1;
-document.getElementById("level").innerText = level;
-document.getElementById("best").innerText = best;
+let level=parseInt(localStorage.getItem("level"))||1
+let best=parseInt(localStorage.getItem("best"))||1
 
-let rows, cols, size, maze, player, exit, timeLeft, timer;
+document.getElementById("level").innerText=level
+document.getElementById("best").innerText=best
 
-// منع تمرير الصفحة عند السحب
-document.addEventListener('touchmove', e => e.preventDefault(), {passive:false});
+let rows,cols,size,maze,player,exit,timeLeft,timer
 
-// إنشاء المتاهة
+// منع تحديث الصفحة بالسحب
+document.addEventListener('touchmove', e=>e.preventDefault(), {passive:false})
+
 function generateMaze(){
-  rows = 15 + Math.floor(level/2);
-  cols = rows;
-  if(rows%2==0) rows++;
-  if(cols%2==0) cols++;
-  maze = [];
-  for(let y=0;y<rows;y++){
-    maze[y]=[];
-    for(let x=0;x<cols;x++) maze[y][x]=1;
-  }
-  function carve(x,y){
-    maze[y][x]=0;
-    let dirs=[[2,0],[-2,0],[0,2],[0,-2]];
-    dirs.sort(()=>Math.random()-0.5);
-    for(let d of dirs){
-      let nx=x+d[0], ny=y+d[1];
-      if(nx>0 && ny>0 && nx<cols-1 && ny<rows-1 && maze[ny][nx]==1){
-        maze[y+d[1]/2][x+d[0]/2]=0;
-        carve(nx,ny);
-      }
-    }
-  }
-  carve(1,1);
-  player={x:1,y:1};
-  exit={x:cols-2,y:rows-2};
+
+rows=15+Math.floor(level/2)
+cols=rows
+
+if(rows%2==0) rows++
+if(cols%2==0) cols++
+
+maze=[]
+
+for(let y=0;y<rows;y++){
+maze[y]=[]
+for(let x=0;x<cols;x++) maze[y][x]=1
 }
 
-// رسم Neon
-function draw(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  for(let y=0;y<rows;y++){
-    for(let x=0;x<cols;x++){
-      if(maze[y][x]==1){
-        ctx.shadowColor="#00ffff";
-        ctx.shadowBlur=15;
-        ctx.fillStyle="white";
-        ctx.fillRect(x*size,y*size,size,size);
-      }
-    }
-  }
-  ctx.shadowBlur=25;
-  ctx.fillStyle="lime";
-  ctx.fillRect(exit.x*size,exit.y*size,size,size);
-  const colors=["cyan","magenta","lime"];
-  let color = colors[(level-1)%3];
-  ctx.shadowColor=color;
-  ctx.shadowBlur=35;
-  ctx.fillStyle=color;
-  ctx.fillRect(player.x*size,player.y*size,size,size);
+function carve(x,y){
+maze[y][x]=0
+let dirs=[[2,0],[-2,0],[0,2],[0,-2]]
+dirs.sort(()=>Math.random()-0.5)
+
+for(let d of dirs){
+let nx=x+d[0]
+let ny=y+d[1]
+
+if(nx>0&&ny>0&&nx<cols-1&&ny<rows-1&&maze[ny][nx]==1){
+maze[y+d[1]/2][x+d[0]/2]=0
+carve(nx,ny)
 }
+}
+}
+
+carve(1,1)
+
+player={x:1,y:1}
+exit={x:cols-2,y:rows-2}
+}
+
+function draw(){
+ctx.clearRect(0,0,canvas.width,canvas.height)
+
+for(let y=0;y<rows;y++){
+for(let x=0;x<cols;x++){
+if(maze[y][x]==1){
+ctx.shadowColor="#00ffff"
+ctx.shadowBlur=15
+ctx.fillStyle="white"
+ctx.fillRect(x*size,y*size,size,size)
+}
+}
+}
+
+// خروج
+ctx.shadowBlur=30
+ctx.fillStyle="lime"
+ctx.fillRect(exit.x*size,exit.y*size,size,size)
+
+// لاعب
+ctx.shadowColor="cyan"
+ctx.shadowBlur=30
+ctx.fillStyle="cyan"
+ctx.fillRect(player.x*size,player.y*size,size,size)
+}
+
+// ⭐ الحركة الانزلاقية
+let moving=false
 
 function move(dx,dy){
-  let nx=player.x+dx, ny=player.y+dy;
-  if(nx>=0 && ny>=0 && nx<cols && ny<rows && maze[ny][nx]==0){
-    player.x=nx; player.y=ny;
-    draw();
-  }
-  if(player.x==exit.x && player.y==exit.y){
-    // تشغيل صوت Neon
-    transitionSound.currentTime=0;
-    transitionSound.play();
-    // تأثير وميض Neon
-    flashLevelEffect(startLevel);
-    level++;
-    if(level>best){ best=level; localStorage.setItem("best",best); document.getElementById("best").innerText=best; }
-    document.getElementById("level").innerText = level;
-    localStorage.setItem("level",level);
-  }
+
+if(moving) return
+moving=true
+
+let interval=setInterval(()=>{
+
+let nx=player.x+dx
+let ny=player.y+dy
+
+if(nx<0||ny<0||nx>=cols||ny>=rows||maze[ny][nx]==1){
+clearInterval(interval)
+moving=false
+return
 }
 
-function flashLevelEffect(callback){
-  let opacity = 1;
-  const interval = setInterval(()=>{
-    draw();
-    ctx.fillStyle = `rgba(0,255,255,${opacity})`;
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    opacity -= 0.08;
-    if(opacity <=0){ clearInterval(interval); callback(); }
-  },30);
+player.x=nx
+player.y=ny
+
+draw()
+
+// تأثير Neon
+ctx.fillStyle="rgba(0,255,255,0.2)"
+ctx.fillRect(player.x*size-5,player.y*size-5,size+10,size+10)
+
+if(player.x==exit.x&&player.y==exit.y){
+clearInterval(interval)
+moving=false
+nextLevel()
 }
 
-document.addEventListener("keydown", e=>{
-  if(e.key=="ArrowUp") move(0,-1);
-  if(e.key=="ArrowDown") move(0,1);
-  if(e.key=="ArrowLeft") move(-1,0);
-  if(e.key=="ArrowRight") move(1,0);
-});
-
-// Swipe Controls
-let touchStartX=0, touchStartY=0;
-canvas.addEventListener("touchstart", e=>{
-  const touch=e.touches[0];
-  touchStartX=touch.clientX;
-  touchStartY=touch.clientY;
-},{passive:true});
-canvas.addEventListener("touchend", e=>{
-  const touch=e.changedTouches[0];
-  const dx=touch.clientX-touchStartX;
-  const dy=touch.clientY-touchStartY;
-  if(Math.abs(dx)>Math.abs(dy)){
-    if(dx>30) move(1,0); else if(dx<-30) move(-1,0);
-  } else {
-    if(dy>30) move(0,1); else if(dy<-30) move(0,-1);
-  }
-},{passive:true});
-
-// Responsive
-function resizeCanvas(){
-  const margin = 40;
-  const s = Math.min(window.innerWidth, window.innerHeight - margin);
-  canvas.width = s;
-  canvas.height = s;
-  if(cols) size = canvas.width / cols;
-  draw();
-  document.getElementById("controls").style.display = window.innerWidth>800?"none":"grid";
+},40)
 }
-window.addEventListener("resize", resizeCanvas);
+
+function nextLevel(){
+level++
+
+if(level>best){
+best=level
+localStorage.setItem("best",best)
+document.getElementById("best").innerText=best
+}
+
+document.getElementById("level").innerText=level
+localStorage.setItem("level",level)
+
+// وميض Neon
+let op=1
+let flash=setInterval(()=>{
+draw()
+ctx.fillStyle=`rgba(0,255,255,${op})`
+ctx.fillRect(0,0,canvas.width,canvas.height)
+op-=0.1
+if(op<=0){
+clearInterval(flash)
+startLevel()
+}
+},30)
+}
+
+function resize(){
+let s=Math.min(window.innerWidth,window.innerHeight-150)
+canvas.width=s
+canvas.height=s
+if(cols) size=canvas.width/cols
+draw()
+}
+window.addEventListener("resize",resize)
 
 function startLevel(){
-  generateMaze();
-  resizeCanvas();
-  timeLeft = 60;
-  document.getElementById("time").innerText = timeLeft;
-  clearInterval(timer);
-  timer = setInterval(()=>{
-    timeLeft--;
-    document.getElementById("time").innerText = timeLeft;
-    if(timeLeft<=0) gameOver();
-  },1000);
+generateMaze()
+resize()
+
+timeLeft=30
+document.getElementById("time").innerText=timeLeft
+
+clearInterval(timer)
+
+timer=setInterval(()=>{
+timeLeft--
+document.getElementById("time").innerText=timeLeft
+if(timeLeft<=0) gameOver()
+},1000)
 }
 
 function gameOver(){
-  clearInterval(timer);
-  document.getElementById("gameOver").style.display="flex";
-  document.getElementById("finalLevel").innerText="وصلت للمرحلة "+level;
+clearInterval(timer)
+document.getElementById("gameOver").style.display="flex"
+document.getElementById("finalLevel").innerText="وصلت للمرحلة "+level
 }
 
-function retry(){document.getElementById("gameOver").style.display="none"; startLevel();}
-function resetGame(){localStorage.removeItem("level"); level=1; document.getElementById("level").innerText=level; document.getElementById("gameOver").style.display="none"; startLevel();}
+function retry(){
+document.getElementById("gameOver").style.display="none"
+startLevel()
+}
 
-startLevel();
+function resetGame(){
+localStorage.removeItem("level")
+level=1
+document.getElementById("level").innerText=level
+document.getElementById("gameOver").style.display="none"
+startLevel()
+}
+
+// كيبورد
+document.addEventListener("keydown",e=>{
+if(e.key=="ArrowUp") move(0,-1)
+if(e.key=="ArrowDown") move(0,1)
+if(e.key=="ArrowLeft") move(-1,0)
+if(e.key=="ArrowRight") move(1,0)
+})
+
+// Swipe
+let sx,sy
+canvas.addEventListener("touchstart",e=>{
+sx=e.touches[0].clientX
+sy=e.touches[0].clientY
+},{passive:true})
+
+canvas.addEventListener("touchend",e=>{
+let dx=e.changedTouches[0].clientX-sx
+let dy=e.changedTouches[0].clientY-sy
+
+if(Math.abs(dx)>Math.abs(dy)){
+if(dx>30) move(1,0)
+else if(dx<-30) move(-1,0)
+}else{
+if(dy>30) move(0,1)
+else if(dy<-30) move(0,-1)
+}
+},{passive:true})
+
+startLevel()
+
 </script>
+
 </body>
 </html>
