@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>متاهة النيون</title>
+<title>متاهة النيون الاحترافية</title>
 
 <style>
 body{
@@ -18,7 +18,6 @@ overflow:hidden;
 background:#000;
 }
 
-/* خلفية Neon */
 #bg{
 position:fixed;
 width:100%;
@@ -78,7 +77,6 @@ justify-content:center;
 align-items:center;
 flex-direction:column;
 }
-
 </style>
 </head>
 
@@ -116,7 +114,6 @@ flex-direction:column;
 </div>
 
 <script>
-
 const canvas=document.getElementById("game")
 const ctx=canvas.getContext("2d")
 
@@ -128,19 +125,24 @@ document.getElementById("best").innerText=best
 
 let rows,cols,size,maze,player,exit,timeLeft,timer
 
-// منع تحديث الصفحة بالسحب
+// ⭐ Trail + Particles
+let trail=[]
+let particles=[]
+
+// 🔊 صوت
+const winSound = new Audio("https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3")
+
+// منع السحب
 document.addEventListener('touchmove', e=>e.preventDefault(), {passive:false})
 
+// المتاهة
 function generateMaze(){
-
 rows=15+Math.floor(level/2)
 cols=rows
-
 if(rows%2==0) rows++
 if(cols%2==0) cols++
 
 maze=[]
-
 for(let y=0;y<rows;y++){
 maze[y]=[]
 for(let x=0;x<cols;x++) maze[y][x]=1
@@ -150,27 +152,42 @@ function carve(x,y){
 maze[y][x]=0
 let dirs=[[2,0],[-2,0],[0,2],[0,-2]]
 dirs.sort(()=>Math.random()-0.5)
-
 for(let d of dirs){
-let nx=x+d[0]
-let ny=y+d[1]
-
+let nx=x+d[0], ny=y+d[1]
 if(nx>0&&ny>0&&nx<cols-1&&ny<rows-1&&maze[ny][nx]==1){
 maze[y+d[1]/2][x+d[0]/2]=0
 carve(nx,ny)
 }
 }
 }
-
 carve(1,1)
-
 player={x:1,y:1}
 exit={x:cols-2,y:rows-2}
 }
 
+// رسم
 function draw(){
 ctx.clearRect(0,0,canvas.width,canvas.height)
 
+// particles
+for(let p of particles){
+ctx.fillStyle=`rgba(${p.color},${p.life})`
+ctx.fillRect(p.x,p.y,3,3)
+p.x+=p.vx
+p.y+=p.vy
+p.life-=0.03
+}
+particles=particles.filter(p=>p.life>0)
+
+// trail
+for(let t of trail){
+ctx.fillStyle=`rgba(0,255,255,${t.life})`
+ctx.fillRect(t.x*size,t.y*size,size,size)
+t.life-=0.05
+}
+trail=trail.filter(t=>t.life>0)
+
+// جدران
 for(let y=0;y<rows;y++){
 for(let x=0;x<cols;x++){
 if(maze[y][x]==1){
@@ -194,69 +211,105 @@ ctx.fillStyle="cyan"
 ctx.fillRect(player.x*size,player.y*size,size,size)
 }
 
-// ⭐ الحركة الانزلاقية
+// particles
+function createParticles(x,y,color){
+for(let i=0;i<25;i++){
+particles.push({
+x:x,
+y:y,
+vx:(Math.random()-0.5)*6,
+vy:(Math.random()-0.5)*6,
+life:1,
+color:color
+})
+}
+}
+
+// الحركة
 let moving=false
 
 function move(dx,dy){
-
 if(moving) return
 moving=true
 
-let interval=setInterval(()=>{
-
+function step(){
 let nx=player.x+dx
 let ny=player.y+dy
 
 if(nx<0||ny<0||nx>=cols||ny>=rows||maze[ny][nx]==1){
-clearInterval(interval)
 moving=false
 return
 }
+
+trail.push({x:player.x,y:player.y,life:0.5})
 
 player.x=nx
 player.y=ny
 
 draw()
 
-// تأثير Neon
-ctx.fillStyle="rgba(0,255,255,0.2)"
-ctx.fillRect(player.x*size-5,player.y*size-5,size+10,size+10)
-
 if(player.x==exit.x&&player.y==exit.y){
-clearInterval(interval)
 moving=false
-nextLevel()
+levelTransitionEffect(nextLevel)
+return
 }
 
-},40)
+setTimeout(step,35)
+}
+step()
 }
 
+// الانتقال
+function levelTransitionEffect(callback){
+let radius=0
+let maxRadius=canvas.width
+
+const colors=["0,255,255","255,0,255","0,255,150","255,255,0"]
+let color=colors[level%colors.length]
+
+// صوت
+winSound.currentTime=0
+winSound.play()
+
+// particles
+createParticles(
+player.x*size+size/2,
+player.y*size+size/2,
+color
+)
+
+const interval=setInterval(()=>{
+draw()
+
+ctx.beginPath()
+ctx.arc(player.x*size+size/2,player.y*size+size/2,radius,0,Math.PI*2)
+ctx.strokeStyle=`rgba(${color},${1-radius/maxRadius})`
+ctx.lineWidth=4
+ctx.stroke()
+
+radius+=20
+
+if(radius>maxRadius){
+clearInterval(interval)
+callback()
+}
+},30)
+}
+
+// المرحلة
 function nextLevel(){
 level++
-
 if(level>best){
 best=level
 localStorage.setItem("best",best)
 document.getElementById("best").innerText=best
 }
-
 document.getElementById("level").innerText=level
 localStorage.setItem("level",level)
-
-// وميض Neon
-let op=1
-let flash=setInterval(()=>{
-draw()
-ctx.fillStyle=`rgba(0,255,255,${op})`
-ctx.fillRect(0,0,canvas.width,canvas.height)
-op-=0.1
-if(op<=0){
-clearInterval(flash)
 startLevel()
 }
-},30)
-}
 
+// الحجم
 function resize(){
 let s=Math.min(window.innerWidth,window.innerHeight-150)
 canvas.width=s
@@ -266,15 +319,19 @@ draw()
 }
 window.addEventListener("resize",resize)
 
+// البداية
 function startLevel(){
 generateMaze()
 resize()
+
+trail=[]
+particles=[]
+moving=false
 
 timeLeft=30
 document.getElementById("time").innerText=timeLeft
 
 clearInterval(timer)
-
 timer=setInterval(()=>{
 timeLeft--
 document.getElementById("time").innerText=timeLeft
@@ -282,6 +339,7 @@ if(timeLeft<=0) gameOver()
 },1000)
 }
 
+// Game Over
 function gameOver(){
 clearInterval(timer)
 document.getElementById("gameOver").style.display="flex"
@@ -330,7 +388,6 @@ else if(dy<-30) move(0,-1)
 },{passive:true})
 
 startLevel()
-
 </script>
 
 </body>
